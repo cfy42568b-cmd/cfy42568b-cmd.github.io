@@ -1,6 +1,24 @@
 (() => {
   'use strict';
   const root = document.documentElement;
+  // Only the wallpaper homepage uses a transparent header over the cover.
+  const cover = document.querySelector('.home-cover');
+  if (cover) {
+    const header = document.querySelector('.site-header');
+    let headerFrame = false;
+    const updateHeader = () => {
+      header.classList.toggle('is-scrolled', window.scrollY > 60);
+      headerFrame = false;
+    };
+    window.addEventListener('scroll', () => {
+      if (!headerFrame) {
+        headerFrame = true;
+        window.requestAnimationFrame(updateHeader);
+      }
+    }, { passive: true });
+    window.addEventListener('pageshow', updateHeader);
+    updateHeader();
+  }
   const themeButton = document.querySelector('.theme-toggle');
   const themeMeta = document.querySelector('meta[name="theme-color"]');
   const systemTheme = window.matchMedia('(prefers-color-scheme: dark)');
