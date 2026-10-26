@@ -1,0 +1,161 @@
+/* Full-screen cover. The illustration is local; text stays selectable HTML. */
+.wallpaper-home .site-header {
+  position: absolute;
+  inset: 0 0 auto;
+  width: 100%;
+  background: transparent;
+  border-bottom-color: transparent;
+  transition: background .25s, border-color .25s, box-shadow .25s;
+}
+.js .wallpaper-home .site-header { position: fixed; }
+.wallpaper-home .site-header.is-scrolled {
+  background: var(--bg);
+  border-bottom-color: var(--line);
+  box-shadow: 0 3px 20px #00000008;
+}
+.wallpaper-home .site-header:not(.is-scrolled) .brand,
+.wallpaper-home .site-header:not(.is-scrolled) .site-nav > a,
+.wallpaper-home .site-header:not(.is-scrolled) .icon-button {
+  color: #fff;
+  text-shadow: 0 1px 12px #0009;
+}
+.wallpaper-home .site-header:not(.is-scrolled) .brand-dot { color: #e0d6fc; }
+.wallpaper-home .site-header:not(.is-scrolled) .brand-mark {
+  background: #ffffff1a;
+  color: #fff;
+  border: 1px solid #ffffff40;
+  backdrop-filter: blur(8px);
+}
+.wallpaper-home .site-header:not(.is-scrolled) .site-nav > a[aria-current]:after {
+  background: #e0d6fc;
+}
+.wallpaper-home .site-header:not(.is-scrolled) .icon-button:hover { background: #ffffff20; }
+.wallpaper-home .site-header:not(.is-scrolled) .header-divider { background: #ffffff40; }
+.home-cover {
+  position: relative;
+  isolation: isolate;
+  min-height: 620px;
+  height: 100vh;
+  height: 100svh;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: #170e25;
+  color: #fff;
+}
+.cover-image,
+.cover-shade {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.cover-image {
+  object-fit: cover;
+  object-position: 50% 48%;
+  z-index: -2;
+}
+.cover-shade {
+  z-index: -1;
+  background: radial-gradient(ellipse at 50% 53%, #08071355, transparent 45%),
+    linear-gradient(180deg, #08071380 0%, #08071333 27%, #0807136b 53%, #0807139c 100%);
+}
+.cover-title {
+  width: 100%;
+  padding: 90px 24px 65px;
+  text-align: center;
+  text-shadow: 0 2px 22px #0009;
+}
+.cover-eyebrow {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 3.2px;
+  color: #ffffffc9;
+}
+.cover-title h1 {
+  margin: 13px 0 12px;
+  font-size: clamp(48px, 5vw, 68px);
+  letter-spacing: 1px;
+  font-weight: 650;
+  line-height: 1.25;
+}
+.cover-title h1 > span { color: #e4dafd; }
+.cover-title p {
+  font-size: 15px;
+  line-height: 1.9;
+  font-weight: 400;
+  letter-spacing: 2px;
+  color: #fff;
+}
+.cover-line {
+  display: block;
+  width: 32px;
+  height: 1px;
+  margin: 24px auto 0;
+  background: #ffffff80;
+}
+.cover-scroll {
+  position: absolute;
+  bottom: 23px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  padding: 10px 18px;
+  border-radius: 8px;
+  color: #ffffffdf;
+  text-shadow: 0 1px 8px #0009;
+  white-space: nowrap;
+}
+.cover-scroll > span { font-size: 10px; letter-spacing: 2px; }
+.cover-scroll:hover { color: #fff; background: #ffffff0d; }
+.cover-scroll > svg { animation: cover-cue 2.4s ease-in-out infinite; }
+.cover-caption {
+  position: absolute;
+  left: max(28px, calc((100vw - 1104px) / 2));
+  bottom: 39px;
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 1.7px;
+  color: #ffffffa6;
+}
+.cover-caption-right { left: auto; right: max(28px, calc((100vw - 1104px) / 2)); }
+.home-content { padding-top: 24px; }
+.wallpaper-home .content-layout { scroll-margin-top: 115px; }
+@keyframes cover-cue {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(5px); }
+}
+@media (max-width: 760px) {
+  .cover-caption { font-size: 7px; letter-spacing: 1px; }
+  .cover-title p { font-size: 13px; }
+}
+@media (max-width: 600px) {
+  .home-cover { min-height: 540px; }
+  .cover-image { object-position: 34% center; }
+  .cover-shade {
+    background: radial-gradient(ellipse at 50% 53%, #08071366, transparent 50%),
+      linear-gradient(180deg, #08071380, #08071333 26%, #08071373 58%, #080713a3);
+  }
+  .cover-title { padding-top: 115px; }
+  .cover-title h1 { font-size: 51px; margin-top: 15px; }
+  .cover-title p { font-size: 12px; letter-spacing: 1px; }
+  .cover-eyebrow { font-size: 8px; letter-spacing: 1.5px; }
+  .cover-caption { display: none; }
+  .cover-scroll { bottom: max(21px, env(safe-area-inset-bottom)); }
+  .cover-scroll > span { font-size: 9px; }
+  .home-content { padding-top: 16px; }
+  .js .wallpaper-home .site-header:not(.is-scrolled) .site-nav > a {
+    color: var(--ink);
+    text-shadow: none;
+  }
+  .js .wallpaper-home .site-header:not(.is-scrolled) .site-nav > a[aria-current]:after {
+    background: var(--purple);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wallpaper-home .site-header { transition: none; }
+  .cover-scroll > svg { animation: none; }
+}

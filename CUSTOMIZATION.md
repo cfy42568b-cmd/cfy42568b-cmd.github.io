@@ -9,6 +9,8 @@
 - `css/taffy.css`：所有页面的外观。文件开头的 CSS 变量控制主题配色。
 - `js/taffy.js`：主题切换、移动端导航、本地搜索和阅读辅助。
 - `assets/favicon.svg`：浏览器标签页图标。
+- `assets/butterfly-night.jpg`：首页全屏紫色蝴蝶壁纸，直接使用用户提供的原图。
+- `css/wallpaper.css`：首页壁纸的遮罩、居中标题、导航样式及手机焦点位置。
 - `2026/10/22/hello-world/index.html`：原有文章。
 - `archives/`：全部、年度与月份归档。
 
@@ -21,6 +23,12 @@
 **这个仓库目前只有 Hexo 生成后的静态文件，没有 Hexo 源项目中的 `_config.yml`、`source/` 或 `themes/`。** 因此本次美化直接修改部署文件，并未安装或声称修改了 Hexo 源主题。从本地原有 Hexo 项目再次执行部署，可能覆盖这些改动。持续使用 Hexo 写作前，应将共同的头部、页脚、文章和归档布局迁移到原 Hexo 源主题，并将 `css/taffy.css`、`js/taffy.js`、`assets/favicon.svg` 放进主题的 `source/`。请先保存此分支作为备份。
 
 原默认主题的 CSS、jQuery 和 Fancybox 文件仍保留，但新页面不再加载它们。
+
+## 首页壁纸
+
+首页以 `<img class="cover-image">` 显示本地 JPG 壁纸，并通过 `object-fit: cover` 填满首屏。手机使用独立的 `object-position` 来保留画面主体。网站标题、描述和滚动提示都使用 HTML，不会烘焙到图片里。
+
+更换壁纸时，可替换 `assets/butterfly-night.jpg`，并同步修改首页图片的 `width`、`height`。`css/wallpaper.css` 中的 `.cover-image` 控制取景位置，`.cover-shade` 控制暗色遮罩。首页壁纸在深浅色模式下都会保留；文章区继续使用原有主题颜色。
 
 ## 预览
 
