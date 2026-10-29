@@ -1,0 +1,13 @@
+/* The first interactive programming project inside Hello World. */
+.program-intro .eyebrow{display:inline-block;margin-top:5px;color:var(--purple)}
+.article-entry .program-intro h2{margin-top:10px}
+.program-figure{margin:26px 0 18px;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--paper)}
+.program-frame{display:block;width:100%;height:clamp(600px,112vw,980px);border:0;background:#fff;color-scheme:light}
+.program-figure figcaption{padding:13px 18px;font-size:12px;line-height:1.8;color:var(--muted);border-top:1px solid var(--line)}
+.program-actions{display:flex;flex-wrap:wrap;align-items:center;gap:12px 22px;margin:18px 0 25px}
+.article-entry .program-actions a{display:inline-flex;align-items:center;min-height:44px;font-size:13px}
+.program-instructions{padding-left:22px}
+.program-instructions li{padding:4px 0}
+.program-note{padding:15px 18px;border-left:3px solid var(--purple);background:var(--bg);border-radius:0 9px 9px 0}
+.program-divider{border:0;border-top:1px solid var(--line);margin:36px 0}
+@media(max-width:600px){.program-frame{height:640px}.program-figure figcaption{padding:12px 14px}.program-actions{gap:5px 20px}}
