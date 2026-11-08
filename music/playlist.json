@@ -2,5 +2,10 @@
   {
     "title": "Paradise Found",
     "src": "/music/Paradise_Found.mp3"
+  },
+  {
+    "title": "Boogie Party",
+    "artist": "Kevin MacLeod",
+    "src": "/music/Boogie_Party.mp3"
   }
 ]

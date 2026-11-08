@@ -21,6 +21,7 @@
       <ul class="music-list" aria-label="歌曲列表"></ul>
       <div class="music-empty"><p>选一首喜欢的纯音乐，陪你慢慢读。</p><button type="button" data-action="import" class="music-import-button">选择音频文件</button></div>
       <p class="music-feedback" role="status" aria-live="polite">本机选歌仅保存在当前浏览器，不会上传。</p>
+      <p class="music-feedback music-credit">“Boogie Party” — Kevin MacLeod (<a href="https://incompetech.com/music/royalty-free/index.html?isrc=USUAN2200002" target="_blank" rel="noopener noreferrer">incompetech.com</a>) · <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a> · 音频未修改</p>
       <input class="music-file-input" type="file" accept="audio/*,.mp3,.m4a,.aac,.ogg,.wav,.flac" multiple hidden aria-label="选择音乐文件">
     </section>
     <div class="music-dock"><button type="button" class="music-toggle" aria-label="展开音乐播放器" aria-controls="music-panel" aria-expanded="false"><span class="music-mini-record" aria-hidden="true">${icon('music')}</span><span><strong class="music-dock-title">Taffy 的纯音乐</strong><small class="music-dock-detail">添加喜欢的旋律</small></span></button><button type="button" class="music-dock-play" data-action="play" aria-label="播放音乐" disabled>${icon('play')}</button></div>`;
