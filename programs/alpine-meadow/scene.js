@@ -1,5 +1,6 @@
 import * as THREE from './vendor/three.module.js';
 import { OrbitControls } from './vendor/OrbitControls.js';
+import {sheepdog,swallows} from './wildlife.js';
 import {populate} from './villagers.js';
 import {interaction} from './interaction.js';
 import {details,surface} from './details.js';
@@ -13,9 +14,9 @@ catch { const {SVGRenderer}=await import('./vendor/SVGRenderer.js');renderer=new
 const Toon=fallback?class extends THREE.MeshLambertMaterial {constructor(params){const {gradientMap,...rest}=params;super(rest)}}:THREE.MeshToonMaterial;
 renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.NoToneMapping;renderer.toneMappingExposure=1.25;container.appendChild(renderer.domElement);
 const scene=new THREE.Scene();const fallbackAmbient=new THREE.AmbientLight('#ffffff',1.35);if(fallback)scene.add(fallbackAmbient);scene.background=new THREE.Color('#eef0e7');scene.fog=new THREE.Fog('#eef0e7',65,115);
-const camera=new THREE.PerspectiveCamera(33,innerWidth/innerHeight,.1,180);const mobile=()=>innerWidth<1000;
+const camera=new THREE.PerspectiveCamera(33,innerWidth/innerHeight,.035,260);const mobile=()=>innerWidth<1000;
 const homePos=new THREE.Vector3(23,28,48);camera.position.copy(homePos);
-const controls=new OrbitControls(camera,renderer.domElement);controls.target.set(0,2,0);controls.enableDamping=true;controls.dampingFactor=.06;controls.zoomToCursor=true;controls.minDistance=3.4;controls.maxDistance=78;controls.maxPolarAngle=Math.PI*.47;controls.minPolarAngle=.22;controls.autoRotateSpeed=.45;controls.enablePan=true;
+const controls=new OrbitControls(camera,renderer.domElement);controls.target.set(0,2,0);controls.enableDamping=true;controls.dampingFactor=.06;controls.zoomToCursor=true;controls.minDistance=.6;controls.maxDistance=132;controls.maxPolarAngle=Math.PI*.47;controls.minPolarAngle=.22;controls.autoRotateSpeed=.45;controls.enablePan=true;
 const hemi=new THREE.HemisphereLight('#f4f2d6','#7c926c',fallback?.9:2.5);scene.add(hemi);const sun=new THREE.DirectionalLight('#fff4d1',3.2);sun.position.set(-18,30,17);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);sun.shadow.camera.left=-25;sun.shadow.camera.right=25;sun.shadow.camera.top=25;sun.shadow.camera.bottom=-25;sun.shadow.normalBias=.035;sun.shadow.bias=-.0002;scene.add(sun);const fill=new THREE.DirectionalLight('#c8d9e0',.36);fill.position.set(15,10,-10);scene.add(fill);
 const island=new THREE.Group();island.rotation.y=-.16;scene.add(island);
 let seed=7248;const rand=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296};const range=(a,b)=>a+rand()*(b-a);
@@ -72,7 +73,7 @@ for(const z of [bridgeZ-.66,bridgeZ+.66]){for(const x of [bridgeX-1.65,bridgeX,b
 // Split-rail pasture fences.
 function fence(points){for(let k=0;k<points.length-1;k++){const [x,z]=points[k],[xx,zz]=points[k+1];const len=Math.hypot(xx-x,zz-z),n=Math.ceil(len/.9);for(let i=0;i<=n;i++){const f=i/n,px=x+(xx-x)*f,pz=z+(zz-z)*f;box(px,height(px,pz)+.46,pz,.12,.92,.12,'#ad9263',island,true)}for(const level of [.34,.7]){const start=new THREE.Vector3(x,height(x,z)+level,z),end=new THREE.Vector3(xx,height(xx,zz)+level,zz),dir=end.clone().sub(start);const rail=box(0,0,0,.085,.085,dir.length(),'#c3a978',island,true);rail.position.copy(start.add(end).multiplyScalar(.5));rail.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),dir.normalize())}}}
 fence([[5.8,4],[5.5,9],[8,11],[12.4,9.4],[13.1,5],[12.4,1.5],[9.4,.6]]);fence([[-13,3],[-13.6,7],[-10,9]]);
-const village=populate({island,ball,box,cyl,height,bridgeX});const residents=village.people.map(p=>p.g);const picks=[...residents];
+const village=populate({island,ball,box,cyl,height,bridgeX});const residents=village.people.map(p=>p.g);const herder=sheepdog({island,height,ball});const picks=[...residents,herder.dog];
 // Grazing cows and woolly sheep.
 const animals=[];function animal(x,z,cow,id){const g=new THREE.Group();island.add(g);const head=new THREE.Group();head.position.set(cow?.39:.287,.57,0);g.add(head);const legs=animalForm(g,head,cow,id);g.position.set(x,height(x,z),z);g.rotation.y=range(0,6);g.userData.name=cow?`奶牛 ${id} · 哞——`:`小羊 ${id} · 咩～`;g.userData.kind='animal';picks.push(g);animals.push({g,head,legs,base:new THREE.Vector3(x,0,z),phase:range(0,6),speed:range(.12,.24),cow});}
 for(let i=0;i<18;i++){let row=Math.floor(i/4),col=i%4;animal(6.68+col*1.57+(row%2)*.18,3.19+row*1.34,i%2===0&&i<16,i+1)}
@@ -81,7 +82,7 @@ for(const [x,z] of [[11,9],[10.4,9.1],[-10,4]]){const m=mesh(new THREE.CylinderG
 box(-2,height(-2,3)+.58,3,.1,1.1,.1,'#8c7856');box(-2,height(-2,3)+1.02,3,.8,.26,.1,'#bda372',island,true);
 // Clouds drift above the peaks; birds follow gentle loops.
 const clouds=[];const cloudMat=new THREE.MeshBasicMaterial({color:'#faf9ef',transparent:true,opacity:.84});for(let i=0;i<6;i++){const g=new THREE.Group();scene.add(g);for(let j=0;j<5;j++){const c=mesh(new THREE.IcosahedronGeometry(range(.6,1),1),cloudMat,g);c.position.set(j*.7,Math.sin(j*2)*.15,0);c.scale.set(1,.48,.7);c.castShadow=false}g.position.set(range(-17,16),range(13,17),range(-14,-8));clouds.push({g,x:g.position.x,phase:range(0,6)})}
-const birds=[];for(let i=0;i<5;i++){const g=new THREE.Group();scene.add(g);const a=box(-.13,0,0,.28,.035,.08,'#586c62',g),b=box(.13,0,0,.28,.035,.08,'#586c62',g);birds.push({g,a,b,phase:i*1.2})}
+const fly=swallows({scene,ball});
 const starPos=[];for(let i=0;i<200;i++)starPos.push(range(-45,45),range(14,40),range(-38,8));const starGeo=new THREE.BufferGeometry();starGeo.setAttribute('position',new THREE.Float32BufferAttribute(starPos,3));const stars=new THREE.Points(starGeo,new THREE.PointsMaterial({color:'#f4edcd',size:.09,transparent:true,opacity:0}));scene.add(stars);
 const moon=mesh(new THREE.IcosahedronGeometry(1.15,2),new THREE.MeshBasicMaterial({color:'#f2edc9'}),scene);moon.position.set(13,20,-18);moon.visible=false;
 const plane=mesh(new THREE.PlaneGeometry(300,300),new THREE.ShadowMaterial({opacity:.11}),scene);plane.rotation.x=-Math.PI/2;plane.position.y=-1.30;plane.castShadow=false;if(fallback)plane.visible=false;
@@ -93,13 +94,13 @@ controls.saveState();
 const updateReply=interaction({canvas:renderer.domElement,camera,controls,picks,getTime:()=>elapsed,onPause:()=>{paused=!paused},onLight:index=>{
  const [name,bg,s,h,sp,am]=lighting[index];mode=name;target.bg.set(bg);target.sun.set(s);target.hemi.set(h);target.sunPower=sp;target.ambient=am;moon.visible=name==='night'
 }});
-if(!fallback)batchScenery(island,new Set([fishGroup,...residents,...glints,...smokes,...animals.map(a=>a.g)]));
-let tick=0,drawTime=0;function animate(now){requestAnimationFrame(animate);if(fallback&&now-drawTime<140)return;drawTime=now;const dt=THREE.MathUtils.clamp((now-last)/1000,0,.08);last=now;if(!paused)elapsed+=dt;const t=elapsed;controls.update(dt);village.update(paused?0:dt,t);updateReply();const blend=1-Math.exp(-dt*3);scene.background.lerp(target.bg,blend);scene.fog.color.copy(scene.background);sun.color.lerp(target.sun,blend);hemi.color.lerp(target.hemi,blend);sun.intensity=THREE.MathUtils.lerp(sun.intensity,target.sunPower,blend);hemi.intensity=THREE.MathUtils.lerp(hemi.intensity,target.ambient,blend);renderer.toneMappingExposure=THREE.MathUtils.lerp(renderer.toneMappingExposure,target.exposure,blend);stars.material.opacity=THREE.MathUtils.lerp(stars.material.opacity,mode==='night'?.85:0,blend);for(const w of windows)w.emissiveIntensity=THREE.MathUtils.lerp(w.emissiveIntensity,mode==='night'?2.6:mode==='sunset'?.65:.13,blend);
+if(!fallback)batchScenery(island,new Set([fishGroup,herder.dog,...residents,...glints,...smokes,...animals.map(a=>a.g)]));
+let tick=0,drawTime=0;function animate(now){requestAnimationFrame(animate);if(fallback&&now-drawTime<140)return;drawTime=now;const dt=THREE.MathUtils.clamp((now-last)/1000,0,.08);last=now;if(!paused)elapsed+=dt;const t=elapsed;controls.update(dt);village.update(paused?0:dt,t);herder.update(paused?0:dt,t);updateReply();const blend=1-Math.exp(-dt*3);scene.background.lerp(target.bg,blend);scene.fog.color.copy(scene.background);sun.color.lerp(target.sun,blend);hemi.color.lerp(target.hemi,blend);sun.intensity=THREE.MathUtils.lerp(sun.intensity,target.sunPower,blend);hemi.intensity=THREE.MathUtils.lerp(hemi.intensity,target.ambient,blend);renderer.toneMappingExposure=THREE.MathUtils.lerp(renderer.toneMappingExposure,target.exposure,blend);stars.material.opacity=THREE.MathUtils.lerp(stars.material.opacity,mode==='night'?.85:0,blend);for(const w of windows)w.emissiveIntensity=THREE.MathUtils.lerp(w.emissiveIntensity,mode==='night'?2.6:mode==='sunset'?.65:.13,blend);
 swim(t);animateHeadwaters(t);
 for(const a of animals){const xx=a.base.x+Math.sin(t*a.speed*.2+a.phase)*.15,zz=a.base.z+Math.cos(t*a.speed*.2+a.phase)*.13;a.g.position.set(xx,height(xx,zz)+Math.max(0,Math.sin((t-(a.g.userData.greet??-10))*7))*(t-(a.g.userData.greet??-10)<1?.12:0),zz);a.head.rotation.z=t-(a.g.userData.greet??-10)<1.8?.18+.09*Math.sin(t*7):-.15+Math.sin(t*.7+a.phase)*.2;const walking=Math.sin(t*.25+a.phase)>.6;for(let j=0;j<a.legs.length;j++)a.legs[j].rotation.z=walking?Math.sin(t*3+j*Math.PI)*.16:0;}
 for(const g of glints){g.position.z=((g.userData.z+4.32+t*.45)%19.68)-4.32;g.position.x=rx(g.position.z)+g.userData.offset;g.scale.x=.086+Math.sin(t*1.2+g.userData.z)*.031;}
 for(const s of smokes){const k=(t*.22+s.userData.phase*.25)%1;s.position.copy(s.userData.base);s.position.y+=k*.9;s.position.x+=Math.sin(k*2+t*.3)*.15;s.scale.setScalar(.75+k*1.3);s.material.opacity=.35*(1-k);}
 for(const c of clouds)c.g.position.x=c.x+Math.sin(t*.035+c.phase)*1.5;
-for(const b of birds){b.g.position.set(Math.sin(t*.12+b.phase)*8,12+Math.sin(t*.3+b.phase),-5+Math.cos(t*.12+b.phase)*4);b.g.rotation.y=-t*.12-b.phase;b.a.rotation.z=Math.sin(t*4+b.phase)*.35;b.b.rotation.z=-b.a.rotation.z;}
+fly(t);
 if(fallback){fallbackAmbient.intensity=mode==='night'?.48:mode==='sunset'?1.05:1.35;sun.intensity=mode==='night'?.2:.65;hemi.intensity=mode==='night'?.4:.9;fill.intensity=.2;}renderer.render(scene,camera);if(tick++===0)window.__sceneReady=true;}
 requestAnimationFrame(animate);
