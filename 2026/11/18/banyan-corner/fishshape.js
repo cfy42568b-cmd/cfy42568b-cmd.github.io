@@ -1,0 +1,15 @@
+import * as T from './vendor/three.module.js';
+// Sections describe half-depth, half-width and the height of the centre line.
+export function carpBody(i){const section=[[-.22,.017,.012,.002],[-.18,.024,.018,.003],[-.13,.033,.027,.002],[-.071,.047,.046,.002],[.002,.066,.059,.003],[.067,.072,.065,.005],[.121,.063,.059,.002],[.163,.047,.046,-.002],[.191,.033,.035,-.005],[.207,.022,.024,-.010],[.219,.010,.014,-.013],[.222,.003,.003,-.013]];
+ const curve=new T.CatmullRomCurve3(section.map(([x,h,w])=>new T.Vector3(x,h,w)));let p=[],uv=[],ix=[];const segments=48,sides=32;
+ for(let n=0;n<=segments;n++){let t=n/segments,q=curve.getPoint(t),cy=.004*Math.sin(t*Math.PI)-.013*t**5;for(let j=0;j<=sides;j++){let a=j/sides*Math.PI*2;let belly=Math.sin(a)<0?.86:1;p.push(q.x,cy+q.y*Math.sin(a)*belly*(.96+.04*(i%3)),q.z*Math.cos(a));uv.push((q.x+.22)/.442,j/sides);if(n&&j){let k=n*(sides+1)+j;ix.push(k-sides-2,k-1,k-sides-1,k-sides-1,k-1,k)}}}let g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(p,3));g.setAttribute('uv',new T.Float32BufferAttribute(uv,2));g.setIndex(ix);g.computeVertexNormals();return g}
+export function fins(root,parts,colour){
+ const pale=new T.MeshStandardMaterial({color:colour,side:T.DoubleSide,transparent:true,opacity:.78,vertexColors:true,roughness:.54,depthWrite:false});
+ function fan(base,edge){let pos=[],cols=[],ix=[];let curve=new T.CatmullRomCurve3(edge.map(a=>new T.Vector3(...a)));let v=new T.Vector3(...base);for(let j=0;j<=28;j++){let t=j/28,end=curve.getPoint(t);for(let k=0;k<5;k++){let u=k/4,q=v.clone().lerp(end,u);q.y+=.004*Math.sin(Math.PI*u);q.z+=.0025*Math.cos(j*Math.PI*.5)*u;pos.push(q.x,q.y,q.z);let c=j%3===0?.74:1;cols.push(c,c*.98,c*.94);if(j&&k){let m=j*5+k;ix.push(m-6,m-1,m-5,m-5,m-1,m)}}}let g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(pos,3));g.setAttribute('color',new T.Float32BufferAttribute(cols,3));g.setIndex(ix);g.computeVertexNormals();let f=new T.Mesh(g,pale);root.add(f);parts.push(f)}
+ fan([-.20,.001,0],[[-.215,.016,0],[-.272,.057,.005],[-.316,.076,.009],[-.30,.039,.003],[-.268,.002,0],[-.296,-.043,-.004],[-.305,-.059,-.006],[-.258,-.044,0],[-.211,-.014,0]]);
+ fan([.030,.052,0],[[.080,.062,0],[.040,.106,.002],[-.013,.086,0],[-.085,.066,-.002],[-.133,.046,0],[-.138,.026,0]]);
+ for(let s of [-1,1]){fan([.081,-.010,s*.052],[[.09,-.012,s*.055],[.061,-.020,s*.093],[.003,-.024,s*.124],[-.023,-.026,s*.119],[-.023,-.026,s*.103],[.009,-.018,s*.073],[.044,-.015,s*.055]]);fan([-.028,-.032,s*.030],[[-.015,-.038,s*.04],[-.074,-.065,s*.069],[-.093,-.062,s*.063],[-.065,-.037,s*.032]])}
+ function line(pts,r,color){let geo=new T.TubeGeometry(new T.CatmullRomCurve3(pts.map(p=>new T.Vector3(...p))),10,r,5,false);root.add(new T.Mesh(geo,new T.MeshStandardMaterial({color,roughness:.6})))}
+ for(let s of [-1,1]){line([[.105,.041,s*.045],[.113,.02,s*.059],[.116,-.01,s*.059],[.13,-.034,s*.045]],.0019,'#a18468');line([[.209,-.017,s*.017],[.207,-.022,s*.024],[.196,-.031,s*.032]],.0016,'#c5a285')}
+ line([[.202,-.015,-.026],[.216,-.016,-.014],[.221,-.015,0],[.216,-.016,.014],[.202,-.015,.026]],.0026,'#ae856a')
+}
