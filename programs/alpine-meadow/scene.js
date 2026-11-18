@@ -1,5 +1,7 @@
 import * as THREE from './vendor/three.module.js';
 import { OrbitControls } from './vendor/OrbitControls.js';
+import {populate} from './villagers.js';
+import {interaction} from './interaction.js';
 import {details,surface} from './details.js';
 import {batchScenery} from './static-meshes.js';
 import {headwaters} from './headwaters.js';
@@ -70,7 +72,7 @@ for(const z of [bridgeZ-.66,bridgeZ+.66]){for(const x of [bridgeX-1.65,bridgeX,b
 // Split-rail pasture fences.
 function fence(points){for(let k=0;k<points.length-1;k++){const [x,z]=points[k],[xx,zz]=points[k+1];const len=Math.hypot(xx-x,zz-z),n=Math.ceil(len/.9);for(let i=0;i<=n;i++){const f=i/n,px=x+(xx-x)*f,pz=z+(zz-z)*f;box(px,height(px,pz)+.46,pz,.12,.92,.12,'#ad9263',island,true)}for(const level of [.34,.7]){const start=new THREE.Vector3(x,height(x,z)+level,z),end=new THREE.Vector3(xx,height(xx,zz)+level,zz),dir=end.clone().sub(start);const rail=box(0,0,0,.085,.085,dir.length(),'#c3a978',island,true);rail.position.copy(start.add(end).multiplyScalar(.5));rail.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),dir.normalize())}}}
 fence([[5.8,4],[5.5,9],[8,11],[12.4,9.4],[13.1,5],[12.4,1.5],[9.4,.6]]);fence([[-13,3],[-13.6,7],[-10,9]]);
-const picks=[];
+const village=populate({island,ball,box,cyl,height,bridgeX});const residents=village.people.map(p=>p.g);const picks=[...residents];
 // Grazing cows and woolly sheep.
 const animals=[];function animal(x,z,cow,id){const g=new THREE.Group();island.add(g);const head=new THREE.Group();head.position.set(cow?.39:.287,.57,0);g.add(head);const legs=animalForm(g,head,cow,id);g.position.set(x,height(x,z),z);g.rotation.y=range(0,6);g.userData.name=cow?`奶牛 ${id} · 哞——`:`小羊 ${id} · 咩～`;g.userData.kind='animal';picks.push(g);animals.push({g,head,legs,base:new THREE.Vector3(x,0,z),phase:range(0,6),speed:range(.12,.24),cow});}
 for(let i=0;i<18;i++){let row=Math.floor(i/4),col=i%4;animal(6.68+col*1.57+(row%2)*.18,3.19+row*1.34,i%2===0&&i<16,i+1)}
@@ -87,11 +89,14 @@ const plane=mesh(new THREE.PlaneGeometry(300,300),new THREE.ShadowMaterial({opac
 function resize(){let w=innerWidth,h=innerHeight;renderer.setSize(w,h);camera.aspect=w/h;camera.fov=2*THREE.MathUtils.radToDeg(Math.atan(Math.tan(THREE.MathUtils.degToRad(19))/Math.min(1,w/h)));camera.updateProjectionMatrix()}addEventListener('resize',resize);resize();
 let paused=false,elapsed=0,mode='day',last=performance.now();controls.target.set(0,4,0);controls.update();const target={bg:new THREE.Color('#eaece1'),sun:new THREE.Color('#fff0ce'),hemi:new THREE.Color('#e8ede1'),sunPower:2.35,ambient:1.86,exposure:1.04};
 const lighting=[['day','#eaece1','#fff0ce','#e8ede1',2.35,1.86],['sunset','#e4cfb7','#ffc38e','#e2cec0',2.4,1.46],['night','#263a43','#aecbe0','#b1bdc2',.62,.96]];
-addEventListener('keydown',e=>{if(e.ctrlKey||e.metaKey||e.altKey)return;const k=e.key.toLowerCase();if(['1','2','3'].includes(k)){let [name,bg,s,h,sp,am]=lighting[Number(k)-1];mode=name;target.bg.set(bg);target.sun.set(s);target.hemi.set(h);target.sunPower=sp;target.ambient=am;moon.visible=name==='night'}else if(k===' ') {e.preventDefault();paused=!paused}else if(k==='r')controls.autoRotate=!controls.autoRotate;else if(k==='home'){camera.position.copy(homePos);controls.target.set(0,4,0);controls.update()}});
-if(!fallback)batchScenery(island,new Set([fishGroup,...glints,...smokes,...animals.map(a=>a.g)]));
-let tick=0,drawTime=0;function animate(now){requestAnimationFrame(animate);if(fallback&&now-drawTime<140)return;drawTime=now;const dt=THREE.MathUtils.clamp((now-last)/1000,0,.08);last=now;if(!paused)elapsed+=dt;const t=elapsed;controls.update();const blend=1-Math.exp(-dt*3);scene.background.lerp(target.bg,blend);scene.fog.color.copy(scene.background);sun.color.lerp(target.sun,blend);hemi.color.lerp(target.hemi,blend);sun.intensity=THREE.MathUtils.lerp(sun.intensity,target.sunPower,blend);hemi.intensity=THREE.MathUtils.lerp(hemi.intensity,target.ambient,blend);renderer.toneMappingExposure=THREE.MathUtils.lerp(renderer.toneMappingExposure,target.exposure,blend);stars.material.opacity=THREE.MathUtils.lerp(stars.material.opacity,mode==='night'?.85:0,blend);for(const w of windows)w.emissiveIntensity=THREE.MathUtils.lerp(w.emissiveIntensity,mode==='night'?2.6:mode==='sunset'?.65:.13,blend);
+controls.saveState();
+const updateReply=interaction({canvas:renderer.domElement,camera,controls,picks,getTime:()=>elapsed,onPause:()=>{paused=!paused},onLight:index=>{
+ const [name,bg,s,h,sp,am]=lighting[index];mode=name;target.bg.set(bg);target.sun.set(s);target.hemi.set(h);target.sunPower=sp;target.ambient=am;moon.visible=name==='night'
+}});
+if(!fallback)batchScenery(island,new Set([fishGroup,...residents,...glints,...smokes,...animals.map(a=>a.g)]));
+let tick=0,drawTime=0;function animate(now){requestAnimationFrame(animate);if(fallback&&now-drawTime<140)return;drawTime=now;const dt=THREE.MathUtils.clamp((now-last)/1000,0,.08);last=now;if(!paused)elapsed+=dt;const t=elapsed;controls.update(dt);village.update(paused?0:dt,t);updateReply();const blend=1-Math.exp(-dt*3);scene.background.lerp(target.bg,blend);scene.fog.color.copy(scene.background);sun.color.lerp(target.sun,blend);hemi.color.lerp(target.hemi,blend);sun.intensity=THREE.MathUtils.lerp(sun.intensity,target.sunPower,blend);hemi.intensity=THREE.MathUtils.lerp(hemi.intensity,target.ambient,blend);renderer.toneMappingExposure=THREE.MathUtils.lerp(renderer.toneMappingExposure,target.exposure,blend);stars.material.opacity=THREE.MathUtils.lerp(stars.material.opacity,mode==='night'?.85:0,blend);for(const w of windows)w.emissiveIntensity=THREE.MathUtils.lerp(w.emissiveIntensity,mode==='night'?2.6:mode==='sunset'?.65:.13,blend);
 swim(t);animateHeadwaters(t);
-for(const a of animals){const xx=a.base.x+Math.sin(t*a.speed*.2+a.phase)*.15,zz=a.base.z+Math.cos(t*a.speed*.2+a.phase)*.13;a.g.position.set(xx,height(xx,zz)+Math.max(0,Math.sin((t-(a.g.userData.greet??-10))*7))*(t-(a.g.userData.greet??-10)<1?.12:0),zz);a.head.rotation.z=-.15+Math.sin(t*.7+a.phase)*.2;const walking=Math.sin(t*.25+a.phase)>.6;for(let j=0;j<a.legs.length;j++)a.legs[j].rotation.z=walking?Math.sin(t*3+j*Math.PI)*.16:0;}
+for(const a of animals){const xx=a.base.x+Math.sin(t*a.speed*.2+a.phase)*.15,zz=a.base.z+Math.cos(t*a.speed*.2+a.phase)*.13;a.g.position.set(xx,height(xx,zz)+Math.max(0,Math.sin((t-(a.g.userData.greet??-10))*7))*(t-(a.g.userData.greet??-10)<1?.12:0),zz);a.head.rotation.z=t-(a.g.userData.greet??-10)<1.8?.18+.09*Math.sin(t*7):-.15+Math.sin(t*.7+a.phase)*.2;const walking=Math.sin(t*.25+a.phase)>.6;for(let j=0;j<a.legs.length;j++)a.legs[j].rotation.z=walking?Math.sin(t*3+j*Math.PI)*.16:0;}
 for(const g of glints){g.position.z=((g.userData.z+4.32+t*.45)%19.68)-4.32;g.position.x=rx(g.position.z)+g.userData.offset;g.scale.x=.086+Math.sin(t*1.2+g.userData.z)*.031;}
 for(const s of smokes){const k=(t*.22+s.userData.phase*.25)%1;s.position.copy(s.userData.base);s.position.y+=k*.9;s.position.x+=Math.sin(k*2+t*.3)*.15;s.scale.setScalar(.75+k*1.3);s.material.opacity=.35*(1-k);}
 for(const c of clouds)c.g.position.x=c.x+Math.sin(t*.035+c.phase)*1.5;
